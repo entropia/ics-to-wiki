@@ -14,6 +14,7 @@ from config import (
     EDIT_SUMMARY,
     WIKI_USERNAME,
     WIKI_PASSWORD,
+    INFO_TEXT,
 )
 
 @dataclass
@@ -270,6 +271,9 @@ def extract_events(cal: Calendar) -> List[SimpleEvent]:
 
 def build_mediawiki_table(events: List[SimpleEvent]) -> str:
     lines: List[str] = []
+
+    if INFO_TEXT:
+        lines.append(f"<!--\n{INFO_TEXT}\n-->\n")
 
     lines.append('{| class="termine sortable" border="1" cellspacing="0" cellpadding="5" width="100%" style="border-collapse:collapse;"')
     lines.append('! data-sort-type="date" style="text-align:left; width:250px;" | Datum '
