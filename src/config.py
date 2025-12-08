@@ -1,22 +1,22 @@
 import os
-from dotenv import load_dotenv
+import tomli
 
-load_dotenv()
+config_path = os.path.join(os.path.dirname(__file__), "..", "config.toml")
+with open(config_path, "rb") as f:
+    config = tomli.load(f)
 
-def get_env(name: str, default=None, required: bool = False):
-    value = os.environ.get(name, default)
-    if required and value is None:
-        raise RuntimeError(f"Missing required environment variable: {name}")
-    return value
+def get(key, default=None, required=False):
+    if key in config:
+        return config[key]
+    if required:
+        raise KeyError(f"Missing required configuration key: {key}")
+    return default
 
-CALENDAR_URL     = get_env("CALENDAR_URL", required=True)
-WIKI_API_URL     = get_env("WIKI_API_URL", required=True)
-WIKI_PAGE_TITLE  = get_env("WIKI_PAGE_TITLE", required=True)
-EDIT_SUMMARY     = get_env("EDIT_SUMMARY", "refreshed via script")
-
-WIKI_USERNAME    = get_env("WIKI_USERNAME", required=True)
-WIKI_PASSWORD    = get_env("WIKI_PASSWORD", required=True)
-
-INFO_TEXT        = get_env("INFO_TEXT", "")
-
-LINK_KEYWORDS    = get_env("LINK_KEYWORDS", "")
+CALENDAR_URL = get("calendar", {}).get("url", "")
+REPLACE_LINKS = get("calendar", {}).get("replace_links", [])
+WIKI_API_URL = get("wiki", {}).get("api_url", "")
+WIKI_PAGE_TITLE = get("wiki", {}).get("page_title", "")
+WIKI_USERNAME = get("wiki", {}).get("username", "")
+WIKI_PASSWORD = get("wiki", {}).get("password", "")
+EDIT_SUMMARY = get("wiki", {}).get("edit", {})
+INFO_TEXT = get("wiki", {}).get("info", {})

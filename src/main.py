@@ -15,7 +15,7 @@ from config import (
     WIKI_USERNAME,
     WIKI_PASSWORD,
     INFO_TEXT,
-    LINK_KEYWORDS,
+    REPLACE_LINKS,
 )
 
 @dataclass
@@ -271,15 +271,11 @@ def extract_events(cal: Calendar) -> List[SimpleEvent]:
     return possible_events
 
 def replace_links(text: str) -> str:
-    for keyword in LINK_KEYWORDS.split("엔트로피"):
-        if not keyword.strip():
-            continue
-        if "=" not in keyword:
-            continue
-        key, link = keyword.split("=", 1)
-        key = key.strip()
-        link = link.strip()
-        text = text.replace(key, link)
+    for entry in REPLACE_LINKS:
+        keyword = entry.get("keyword")
+        link = entry.get("link")
+        if keyword and link:
+            text = text.replace(keyword, link)
     return text
 
 def build_mediawiki_table(events: List[SimpleEvent]) -> str:

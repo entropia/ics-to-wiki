@@ -1,0 +1,24 @@
+[calendar]
+url = "https://www.feiertage-deutschland.de/kalender-download/ics/feiertage-deutschland.ics"
+replace_links = [
+    { keyword = "Entropia Plenum", link = "[[Plenum:TOPs|Entropia Plenum]]" },
+    { keyword = "Hackerfrystyck", link = "[[Hackerfrystyck]]" },
+    { keyword = "Haecksen-Treffen", link = "[[Haecksen-Treffen]]" },
+    { keyword = "Godot-Stammtisch", link = "[[Godot-Stammtisch]]" },
+    { keyword = "Brettspielnachmittag", link = "[[Brettspielnachmittag]]" },
+    { keyword = "Freifunk-Treffen", link = "[https://karlsruhe.freifunk.net/kontakt/|Freifunk Karlsruhe Treffen]" },
+    { keyword = "Entropia, Hauptraum", link = "[[Räume#Hauptraum|Hauptraum]]" },
+    { keyword = "Entropia, Nebenraum", link = "[[Räume#Nebenraum|Nebenraum]]" },
+]
+
+[wiki]
+api_url = "https://xxx/api.php"
+page_title = "Vorlage:Feiertage"
+username = "Icsbot"
+password = ""
+
+[wiki.edit]
+edit_summary = "Kalender automatisch aktualisiert (ics-to-wiki)"
+
+[wiki.info]
+text = "HIER NICHTS BEARBEITEN! Diese Tabelle wird automatisch durch ein Bot aus Kalenderdaten aktualisiert. Bitte die Daten im Kalender pflegen."
