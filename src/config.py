@@ -18,3 +18,5 @@ WIKI_USERNAME    = get_env("WIKI_USERNAME", required=True)
 WIKI_PASSWORD    = get_env("WIKI_PASSWORD", required=True)
 
 INFO_TEXT        = get_env("INFO_TEXT", "")
+
+LINK_KEYWORDS    = get_env("LINK_KEYWORDS", "")

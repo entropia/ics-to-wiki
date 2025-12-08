@@ -15,6 +15,7 @@ from config import (
     WIKI_USERNAME,
     WIKI_PASSWORD,
     INFO_TEXT,
+    LINK_KEYWORDS,
 )
 
 @dataclass
@@ -269,6 +270,18 @@ def extract_events(cal: Calendar) -> List[SimpleEvent]:
     possible_events.sort(key=lambda e: e.start)
     return possible_events
 
+def replace_links(text: str) -> str:
+    for keyword in LINK_KEYWORDS.split("엔트로피"):
+        if not keyword.strip():
+            continue
+        if "=" not in keyword:
+            continue
+        key, link = keyword.split("=", 1)
+        key = key.strip()
+        link = link.strip()
+        text = text.replace(key, link)
+    return text
+
 def build_mediawiki_table(events: List[SimpleEvent]) -> str:
     lines: List[str] = []
 
@@ -294,8 +307,8 @@ def build_mediawiki_table(events: List[SimpleEvent]) -> str:
             else:
                 time_cell = start_str
 
-        loc = escape_wiki(ev.location or "")
-        name = escape_wiki(ev.name or "")
+        loc = replace_links(escape_wiki(ev.location or ""))
+        name = replace_links(escape_wiki(ev.name or ""))
 
         if ev.recurrence_text:
             date_cell = (
