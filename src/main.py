@@ -200,7 +200,20 @@ def build_rruleset_for_event(event, dtstart: datetime):
 def extract_events(cal: Calendar) -> List[SimpleEvent]:
     possible_events: List[SimpleEvent] = []
 
+    # filter by RECURRENCE-ID (=moved occurrences)
+    recurrence_overrides: Dict[str, List[Any]] = {}
     for event in cal.walk("VEVENT"):
+        if event.get("recurrence-id"):
+            uid = str(event.get("uid", ""))
+            if uid:
+                if uid not in recurrence_overrides:
+                    recurrence_overrides[uid] = []
+                recurrence_overrides[uid].append(event)
+
+    for event in cal.walk("VEVENT"):
+        if event.get("recurrence-id"): # events with RECURRENCE-ID are rec. events with changes -< handle later
+            continue
+
         status = str(event.get("status", "")).upper()
 
         dtstart_prop = event.get("dtstart")
@@ -226,8 +239,18 @@ def extract_events(cal: Calendar) -> List[SimpleEvent]:
 
         if is_recurring:
             rset = build_rruleset_for_event(event, dtstart)
+
+            # add excluded dates from overrides
+            uid = str(event.get("uid", ""))
+            if uid in recurrence_overrides:
+                for override_event in recurrence_overrides[uid]:
+                    recurrence_id_prop = override_event.get("recurrence-id")
+                    if recurrence_id_prop:
+                        recurrence_id_dt = to_datetime_any(recurrence_id_prop.dt)
+                        rset.exdate(recurrence_id_dt)
+
             next_occurrence = rset.after(datetime.now(dtstart.tzinfo), inc=True)
-            if not next_occurrence:
+            if not next_occurrence: # event is over
                 continue
 
             duration = dtend - dtstart
@@ -263,6 +286,54 @@ def extract_events(cal: Calendar) -> List[SimpleEvent]:
                     end=display_end,
                     location=location,
                     recurrence_text=None,
+                    all_day=is_whole_day,
+                )
+            )
+
+    # handle moved events -> need manual work so the date in the row isn't showed double
+    recurring_rules: Dict[str, Optional[str]] = {}
+    for event in cal.walk("VEVENT"):
+        if event.get("recurrence-id"): # skip moved events
+            continue
+        if event.get("rrule"): # only care about recurring events
+            uid = str(event.get("uid", ""))
+            rule_dict = parse_rrule_to_dict(event.get("rrule"))
+            recurring_rules[uid] = describe_recurrence(rule_dict)
+
+    for uid, override_events in recurrence_overrides.items():
+        for override_event in override_events:
+            dtstart_prop = override_event.get("dtstart")
+            dtstart_raw = dtstart_prop.dt
+            is_whole_day = dtstart_prop.params.get("VALUE")== "DATE"
+            dtstart = to_datetime_any(dtstart_raw)
+
+            dtend_prop = override_event.get("dtend")
+            if dtend_prop is not None:
+                dtend_raw = dtend_prop.dt
+                dtend = to_datetime_any(dtend_raw)
+            else:
+                dtend = dtstart
+
+            if dtend < datetime.now(dtstart.tzinfo): # already past
+                continue
+
+            name = str(override_event.get("summary") or "").strip()
+            location = str(override_event.get("location") or "").strip() or None
+
+            display_start = display_naive(dtstart)
+            display_end = display_naive(dtend)
+
+            recurrence_text = "verschoben"
+            if uid in recurring_rules and recurring_rules[uid]:
+                recurrence_text = "verschoben, sonst {recurring_rules[uid]}"
+
+            possible_events.append(
+                SimpleEvent(
+                    name=name,
+                    start=display_start,
+                    end=display_end,
+                    location=location,
+                    recurrence_text=recurrence_text,
                     all_day=is_whole_day,
                 )
             )
