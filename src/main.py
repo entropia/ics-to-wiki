@@ -325,7 +325,7 @@ def extract_events(cal: Calendar) -> List[SimpleEvent]:
 
             recurrence_text = "verschoben"
             if uid in recurring_rules and recurring_rules[uid]:
-                recurrence_text = "verschoben, sonst {recurring_rules[uid]}"
+                recurrence_text = f"verschoben, sonst {recurring_rules[uid]}"
 
             possible_events.append(
                 SimpleEvent(
