@@ -11,6 +11,4 @@ page_title = "Vorlage:Feiertage"
 username = "Icsbot"
 password = ""
 edit_summary = "Kalender automatisch aktualisiert (ics-to-wiki)"
-
-[wiki.info]
-text = "HIER NICHTS BEARBEITEN! Diese Tabelle wird automatisch durch ein Bot aus Kalenderdaten aktualisiert. Bitte die Daten im Kalender pflegen."
+info = "HIER NICHTS BEARBEITEN! Diese Tabelle wird automatisch durch ein Bot aus Kalenderdaten aktualisiert. Bitte die Daten im Kalender pflegen."
