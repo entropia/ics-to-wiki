@@ -278,6 +278,11 @@ def replace_links(text: str) -> str:
             text = text.replace(keyword, link)
     return text
 
+def make_wiki_link(text: str) -> str:
+    if not text:
+        return text
+    return f"[[{text}]]"
+
 def build_mediawiki_table(events: List[SimpleEvent]) -> str:
     lines: List[str] = []
 
@@ -304,7 +309,7 @@ def build_mediawiki_table(events: List[SimpleEvent]) -> str:
                 time_cell = start_str
 
         loc = replace_links(escape_wiki(ev.location or ""))
-        name = replace_links(escape_wiki(ev.name or ""))
+        name = make_wiki_link(escape_wiki(ev.name or ""))
 
         if ev.recurrence_text:
             date_cell = (
