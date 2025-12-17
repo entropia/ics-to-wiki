@@ -10,8 +10,6 @@ api_url = "https://xxx/api.php"
 page_title = "Vorlage:Feiertage"
 username = "Icsbot"
 password = ""
-
-[wiki.edit]
 edit_summary = "Kalender automatisch aktualisiert (ics-to-wiki)"
 
 [wiki.info]
