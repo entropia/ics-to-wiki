@@ -7,7 +7,7 @@ import requests
 from icalendar import Calendar
 from dateutil.rrule import rrulestr, rruleset
 
-from config import (
+from ics_to_wiki.config import (
     CALENDAR_URL,
     WIKI_API_URL,
     WIKI_PAGE_TITLE,
@@ -461,4 +461,5 @@ def main():
     table_text = build_mediawiki_table(events)
     update_mediawiki_page(table_text)
 
-main()
+if __name__ == "__main__":
+    main()
