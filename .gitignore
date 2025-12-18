@@ -1,2 +1,4 @@
 config.toml
 .idea/
+__pycache__/
+dist/
