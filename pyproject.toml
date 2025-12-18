@@ -5,6 +5,7 @@ description = "simple Python script to convert iCalendar (.ics) files into a wik
 requires-python = ">=3.12"
 dependencies = [
     "icalendar>=6.3.2",
+    "python-dateutil>=2.9.0.post0",
     "requests>=2.32.5",
     "tomli>=2.3.0",
 ]
