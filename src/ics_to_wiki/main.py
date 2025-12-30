@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import os
 import re
 from dataclasses import dataclass
 from datetime import datetime, date, time as dtime
