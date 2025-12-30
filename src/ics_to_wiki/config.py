@@ -1,7 +1,7 @@
 import os
 import tomli
 
-config_path = os.path.join(os.path.dirname(__file__), "..", "config.toml")
+config_path = os.path.join(os.path.dirname(__file__), "../..", "config.toml")
 with open(config_path, "rb") as f:
     config = tomli.load(f)
 
