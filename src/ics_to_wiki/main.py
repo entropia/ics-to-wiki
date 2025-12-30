@@ -106,7 +106,7 @@ def format_event_name(name: str, link: Optional[str]) -> str:
                 url = link[1:-1]
                 return f"[{url} {escaped_name}]"
 
-    return escaped_name
+    return f"[[{escaped_name}]]"
 
 
 def fetch_calendar(url: str) -> Calendar:
