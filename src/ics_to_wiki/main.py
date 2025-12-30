@@ -24,7 +24,7 @@ class SimpleEvent:
     start: datetime
     end: datetime
     location: Optional[str] = None
-    recurrence_text: Optional[str] = None  # z.B. "jeden ersten Montag im Monat"
+    recurrence_text: Optional[str] = None  # e.g. "jeden ersten Montag im Monat"
     all_day: bool = False
     link: Optional[str] = None
 
@@ -49,13 +49,13 @@ ORDINAL_DE = {
 
 
 def escape_wiki(text: str) -> str:
-    text = text.replace("|", "&#124;") # Pipe macht Tabelle kaputt (obviously)
-    text = text.replace("\n", "") # keine Zeilenumbrüche in Zellen
+    text = text.replace("|", "&#124;") # pipe breaks table (obviously)
+    text = text.replace("\n", "") # no line breaks in cells
     return text
 
 
 def to_datetime_any(x: Any) -> datetime:
-    # Sorgt dafür, dass wir immer ein datetime-Objekt haben (Vergleich geht sonst bei ganztägigen Events kaputt)
+    # ensures we always have a datetime object (comparison breaks otherwise for all-day events)
     if isinstance(x, datetime):
         return x
     if isinstance(x, date):
@@ -64,7 +64,7 @@ def to_datetime_any(x: Any) -> datetime:
 
 
 def display_naive(dt: datetime) -> datetime:
-    # TODO: timezone gibt probleme beim vergleichen, mal rausnehmen und lokale Zeit nehmen
+    # TODO: timezone causes problems when comparing, removing it and using local time for now
     if dt.tzinfo is None:
         return dt
     return dt.replace(tzinfo=None)
@@ -76,12 +76,12 @@ def parse_link_from_description(description: Optional[str]) -> Optional[str]:
 
     first_line = description.strip().split("\n")[0].strip()
 
-    # Interner Wiki-Link
+    # internal wiki link
     internal_match = re.match(r'^\[\[([^\]]+)\]\]$', first_line)
     if internal_match:
         return first_line
 
-    # Externer Link
+    # external link
     external_match = re.match(r'^\[(https?://[^\s\]]+)(?:\s+([^\]]+))?\]$', first_line)
     if external_match:
         return first_line
@@ -252,7 +252,7 @@ def extract_events(cal: Calendar) -> List[SimpleEvent]:
                 recurrence_overrides[uid].append(event)
 
     for event in cal.walk("VEVENT"):
-        if event.get("recurrence-id"): # events with RECURRENCE-ID are rec. events with changes -< handle later
+        if event.get("recurrence-id"): # events with RECURRENCE-ID are rec. events with changes -> handle later
             continue
 
         dtstart_prop = event.get("dtstart")
@@ -347,7 +347,7 @@ def extract_events(cal: Calendar) -> List[SimpleEvent]:
         for override_event in override_events:
             dtstart_prop = override_event.get("dtstart")
             dtstart_raw = dtstart_prop.dt
-            is_whole_day = dtstart_prop.params.get("VALUE")== "DATE"
+            is_whole_day = dtstart_prop.params.get("VALUE") == "DATE"
             dtstart = to_datetime_any(dtstart_raw)
 
             dtend_prop = override_event.get("dtend")
