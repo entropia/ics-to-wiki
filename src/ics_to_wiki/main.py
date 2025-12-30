@@ -256,8 +256,6 @@ def extract_events(cal: Calendar) -> List[SimpleEvent]:
         if event.get("recurrence-id"): # events with RECURRENCE-ID are rec. events with changes -< handle later
             continue
 
-        status = str(event.get("status", "")).upper()
-
         dtstart_prop = event.get("dtstart")
         if not dtstart_prop:
             continue
