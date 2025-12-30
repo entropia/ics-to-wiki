@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import re
 from dataclasses import dataclass
 from datetime import datetime, date, time as dtime
 from typing import List, Optional, Dict, Any
@@ -7,7 +8,7 @@ import requests
 from icalendar import Calendar
 from dateutil.rrule import rrulestr, rruleset
 
-from ics_to_wiki.config import (
+from config import (
     CALENDAR_URL,
     WIKI_API_URL,
     WIKI_PAGE_TITLE,
@@ -26,6 +27,7 @@ class SimpleEvent:
     location: Optional[str] = None
     recurrence_text: Optional[str] = None  # z.B. "jeden ersten Montag im Monat"
     all_day: bool = False
+    link: Optional[str] = None
 
 
 WEEKDAY_DE = {
@@ -67,6 +69,46 @@ def display_naive(dt: datetime) -> datetime:
     if dt.tzinfo is None:
         return dt
     return dt.replace(tzinfo=None)
+
+
+def parse_link_from_description(description: Optional[str]) -> Optional[str]:
+    if not description:
+        return None
+
+    first_line = description.strip().split("\n")[0].strip()
+
+    # Interner Wiki-Link
+    internal_match = re.match(r'^\[\[([^\]]+)\]\]$', first_line)
+    if internal_match:
+        return first_line
+
+    # Externer Link
+    external_match = re.match(r'^\[(https?://[^\s\]]+)(?:\s+([^\]]+))?\]$', first_line)
+    if external_match:
+        return first_line
+
+    return None
+
+
+def format_event_name(name: str, link: Optional[str]) -> str:
+    escaped_name = escape_wiki(name or "")
+
+    if link:
+        if link.startswith("[["):
+            if "|" in link:
+                return link
+            else:
+                page = link[2:-2]
+                return f"[[{page}|{escaped_name}]]"
+        elif link.startswith("["):
+            if " " in link[1:-1]:
+                return link
+            else:
+                url = link[1:-1]
+                return f"[{url} {escaped_name}]"
+
+    return escaped_name
+
 
 def fetch_calendar(url: str) -> Calendar:
     resp = requests.get(url, timeout=30)
@@ -234,6 +276,8 @@ def extract_events(cal: Calendar) -> List[SimpleEvent]:
 
         name = str(event.get("summary") or "").strip()
         location = str(event.get("location") or "").strip() or None
+        description = str(event.get("description") or "").strip() or None
+        link = parse_link_from_description(description)
 
         is_recurring = event.get("rrule") is not None
 
@@ -270,6 +314,7 @@ def extract_events(cal: Calendar) -> List[SimpleEvent]:
                     location=location,
                     recurrence_text=recurrence_text,
                     all_day=is_whole_day,
+                    link=link,
                 )
             )
         else:
@@ -287,6 +332,7 @@ def extract_events(cal: Calendar) -> List[SimpleEvent]:
                     location=location,
                     recurrence_text=None,
                     all_day=is_whole_day,
+                    link=link,
                 )
             )
 
@@ -319,6 +365,8 @@ def extract_events(cal: Calendar) -> List[SimpleEvent]:
 
             name = str(override_event.get("summary") or "").strip()
             location = str(override_event.get("location") or "").strip() or None
+            description = str(override_event.get("description") or "").strip() or None
+            link = parse_link_from_description(description)
 
             display_start = display_naive(dtstart)
             display_end = display_naive(dtend)
@@ -335,6 +383,7 @@ def extract_events(cal: Calendar) -> List[SimpleEvent]:
                     location=location,
                     recurrence_text=recurrence_text,
                     all_day=is_whole_day,
+                    link=link,
                 )
             )
 
@@ -348,11 +397,6 @@ def replace_links(text: str) -> str:
         if keyword and link:
             text = text.replace(keyword, link)
     return text
-
-def make_wiki_link(text: str) -> str:
-    if not text:
-        return text
-    return f"[[{text}]]"
 
 def build_mediawiki_table(events: List[SimpleEvent]) -> str:
     lines: List[str] = []
@@ -380,7 +424,7 @@ def build_mediawiki_table(events: List[SimpleEvent]) -> str:
                 time_cell = start_str
 
         loc = replace_links(escape_wiki(ev.location or ""))
-        name = make_wiki_link(escape_wiki(ev.name or ""))
+        name = format_event_name(ev.name, ev.link)
 
         if ev.recurrence_text:
             date_cell = (
